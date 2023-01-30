@@ -14,14 +14,23 @@ const BASE_URL = 'https://reqres.in/api/products/';
 
 export default function App() {
 
+  const [idValue, setIdValue] = useState('');
   const [prod, setProd] = useState([]);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const getProduct = async () => {
     const res = await fetch(BASE_URL);
     const json = await res.json();
     setProd(json.data);
+  };
+
+  const indexLast = (page + 1) * rowsPerPage;
+  const indexFirst = indexLast - rowsPerPage;
+  const activeProd = prod.slice(indexFirst, indexLast);
+
+  const handleChange = (event) => {
+    setIdValue(event.target.value);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -38,7 +47,14 @@ export default function App() {
   return (
     <Container maxWidth="sm">
       <Box sx={{ py: 2, height: '100vh' }}>
-        <TextField id="outlined-basic" label="Filter by id" variant="outlined" type="number" size="small" />
+        <TextField
+          id="outlined-basic"
+          label="Filter by id"
+          variant="outlined"
+          type="number"
+          size="small"
+          value={idValue}
+          onChange={handleChange} />
         <TableContainer component={Paper} sx={{ marginTop: 1 }}>
           <Table aria-label="simple table">
             <TableHead>
@@ -49,7 +65,7 @@ export default function App() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {prod.map((item) => (
+              {prod.length ? activeProd.map((item) => (
                 <TableRow
                   key={item.id}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 }, backgroundColor: item.color }}
@@ -60,16 +76,17 @@ export default function App() {
                   <TableCell align="left">{item.name.toUpperCase()}</TableCell>
                   <TableCell align="right">{item.year}</TableCell>
                 </TableRow>
-              ))}
+              )) : <TableRow><TableCell align="center">Nothing found!</TableCell></TableRow> }
             </TableBody>
           </Table>
         </TableContainer>
         <TablePagination
           component="div"
-          count={12}
+          count={prod.length}
           page={page}
           onPageChange={handleChangePage}
           rowsPerPage={rowsPerPage}
+          rowsPerPageOptions={[2, 5]}
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Box>
